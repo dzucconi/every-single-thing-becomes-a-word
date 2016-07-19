@@ -1,7 +1,37 @@
-body {
+body,
+pre,
+textarea {
   margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
 }
 
 pre {
   white-space: pre-wrap;
+}
+
+textarea:focus {
+  outline: none;
+}
+
+.input,
+.stage {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  padding: 1em;
+}
+
+.input {
+  left: 0;
+}
+
+.stage {
+  right: 0;
+  background-color: black;
+  color: white;
 }
