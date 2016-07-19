@@ -10,12 +10,10 @@ html
     link( rel='icon', href='favicon.ico' )
     link( rel='stylesheet', href= 'index.css' )
   body
-    textarea.input( id='input', autofocus )
-
     textarea#stage.stage( readonly )
       | &hellip;
 
-    a#compressor.compress
-      | &bullet;
+    .editor
+      textarea.input( id='input', autofocus )
 
     script( src='index.js' )

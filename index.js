@@ -4,17 +4,19 @@ import { parse } from './lib/qs';
 
 const stage = document.getElementById('stage');
 const input = document.getElementById('input');
-const compressor = document.getElementById('compressor');
 
 const render = () =>
   stage.innerHTML = braid(input.value);
 
-input.addEventListener('input', render);
+const publish = x => {
+  const value = x || input.value.replace(/(?:\r\n|\r|\n)/g, ' ');
+  history.replaceState(null, null, `?q=${compress(value)}`);
+};
 
-const update = () =>
-  history.replaceState(null, null, `?q=${compress(input.value)}`);
-
-compressor.addEventListener('click', update);
+input.addEventListener('input', () => {
+  publish('');
+  render();
+});
 
 const { q } = parse(location.search);
 
