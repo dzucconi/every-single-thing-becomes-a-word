@@ -1,3 +1,8 @@
-import foo from './lib/foo';
+import braid from './lib/braid';
 
-document.body.innerHTML = foo('foo');
+const stage = document.getElementById('stage');
+const input = document.getElementById('input');
+
+input.addEventListener('input', () =>
+  stage.innerHTML = braid(input.value)
+);
