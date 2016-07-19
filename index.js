@@ -22,3 +22,7 @@ if (!!q) {
   input.value = decompress(q);
   render();
 }
+
+stage.addEventListener('click', () =>
+  stage.setSelectionRange(0, stage.value.length)
+);
