@@ -34,10 +34,10 @@ textarea:focus {
   bottom: 0;
   overflow-y: auto;
 }
-  .editor:hover,
-  .stage:hover {
-    z-index: 1;
-  }
+.editor:hover,
+.stage:hover {
+  z-index: 1;
+}
 
 .editor {
   width: 25%;

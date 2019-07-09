@@ -1,4 +1,4 @@
-import { compress, decompress } from '../../lib/lzw';
+import { compress, decompress } from "../../src/lib/lzw";
 
 const string = `
   Every single thing becomes a word
@@ -17,8 +17,11 @@ const string = `
   or a bird that stirs suddenly in its sleep.
 `;
 
-describe('compress', () => {
-  const compressed = compress(string);
-  console.log(compressed.length, string.length);
-  console.log(decompress(compressed));
+describe("compress/decompress", () => {
+  it("compresses/decompresses losslessly", () => {
+    const compressed = compress(string);
+    expect(compressed.length).toBe(381);
+    expect(string.length).toBe(630);
+    expect(decompress(compressed)).toEqual(string);
+  });
 });

@@ -1,6 +1,9 @@
 .env
 .s3config
 .DS_Store
+.cache
+.vscode
 node_modules
 npm-debug.log
 build
+dist

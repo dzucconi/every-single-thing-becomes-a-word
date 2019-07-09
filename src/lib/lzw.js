@@ -1,11 +1,11 @@
 export const compress = s => {
-  var dict = {};
-  var data = (s + "").split("");
-  var out = [];
-  var currChar;
-  var phrase = data[0];
-  var code = 256;
-  for (var i = 1; i < data.length; i++) {
+  let dict = {};
+  let data = (s + "").split("");
+  let out = [];
+  let currChar;
+  let phrase = data[0];
+  let code = 256;
+  for (let i = 1; i < data.length; i++) {
     currChar = data[i];
     if (dict[phrase + currChar] != null) {
       phrase += currChar;
@@ -17,26 +17,26 @@ export const compress = s => {
     }
   }
   out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
-  for (var i = 0; i < out.length; i++) {
-    out[i] = String.fromCharCode(out[i]);
+  for (let n = 0; n < out.length; n++) {
+    out[n] = String.fromCharCode(out[n]);
   }
   return out.join("");
 };
 
 export const decompress = s => {
-  var dict = {};
-  var data = (s + "").split("");
-  var currChar = data[0];
-  var oldPhrase = currChar;
-  var out = [currChar];
-  var code = 256;
-  var phrase;
-  for (var i = 1; i < data.length; i++) {
-    var currCode = data[i].charCodeAt(0);
+  let dict = {};
+  let data = (s + "").split("");
+  let currChar = data[0];
+  let oldPhrase = currChar;
+  let out = [currChar];
+  let code = 256;
+  let phrase;
+  for (let i = 1; i < data.length; i++) {
+    let currCode = data[i].charCodeAt(0);
     if (currCode < 256) {
       phrase = data[i];
     } else {
-      phrase = dict[currCode] ? dict[currCode] : (oldPhrase + currChar);
+      phrase = dict[currCode] ? dict[currCode] : oldPhrase + currChar;
     }
     out.push(phrase);
     currChar = phrase.charAt(0);
@@ -45,4 +45,4 @@ export const decompress = s => {
     oldPhrase = phrase;
   }
   return out.join("");
-}
+};
