@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Every Single Thing Becomes a Word. A text tool by Damon Zucconi that braids words together, one letter at a time.">
+    <title>Every Single Thing Becomes a Word</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/style.css">
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <main aria-label="Every Single Thing Becomes a Word">
+      <textarea id="input" aria-label="Source text" placeholder="Begin typing" spellcheck="false" autofocus></textarea>
+      <textarea id="output" aria-label="Braided text" placeholder="Begin typing" spellcheck="false" readonly></textarea>
+      <div class="copy-control">
+        <span id="status" role="status"></span>
+        <button id="copy" type="button" disabled>Copy</button>
+      </div>
+    </main>
+    <noscript>This text tool needs JavaScript enabled to braid words.</noscript>
+  </body>
+</html>

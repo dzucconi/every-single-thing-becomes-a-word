@@ -1,0 +1,69 @@
+:root {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  color: #000;
+  background: #fff;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+textarea, button { font: inherit; }
+textarea {
+  position: fixed;
+  top: 0;
+  height: 100%;
+  height: 100dvh;
+  border: 0;
+  border-radius: 0;
+  resize: none;
+  appearance: none;
+  line-height: 1.33;
+}
+textarea:focus { outline: none; }
+#input {
+  right: 0;
+  width: 33.33%;
+  padding: 1rem 1rem 4rem;
+  color: #000;
+  background: #fff;
+}
+#input:hover, #input:focus-visible { z-index: 1; }
+#output {
+  left: 0;
+  width: 90%;
+  padding: 1em 1em 2em;
+  font-size: 3rem;
+  color: #fff;
+  background: #000;
+}
+.copy-control {
+  position: fixed;
+  z-index: 2;
+  right: 1rem;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  font-size: 0.75rem;
+  background: #fff;
+}
+button {
+  min-height: 44px;
+  padding: 0.5rem;
+  border: 0;
+  background: #fff;
+  color: #000;
+  cursor: pointer;
+}
+button:disabled { color: #777; cursor: default; }
+button:focus-visible { outline: 1px solid; outline-offset: 2px; }
+#output:focus-visible { outline: 1px solid #aaa; outline-offset: -4px; }
+#status { max-width: 16rem; }
+noscript { position: fixed; z-index: 3; padding: 1rem; background: #fff; }
+
+@media (max-width: 600px) {
+  #input { top: 65%; width: 100%; height: 35%; padding-bottom: 4rem; }
+  #output { width: 100%; height: 65%; padding: 1.5rem; font-size: 2rem; }
+}

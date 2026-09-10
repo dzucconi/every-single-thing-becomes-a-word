@@ -1,0 +1,7 @@
+[build]
+  publish = "public"
+
+[[redirects]]
+  from = "/every-single-thing-becomes-a-word"
+  to = "/"
+  status = 301
