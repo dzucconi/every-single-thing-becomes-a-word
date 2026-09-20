@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { typingSteps } from "../public/typing.js";
+import { typingSteps } from "../src/typing.ts";
 
 test("playback finishes with exact source text across different random sequences", () => {
   const text = "Every single thing becomes a word. 👩‍💻 e\u0301\nMore  words!";

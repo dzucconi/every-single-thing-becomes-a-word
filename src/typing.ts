@@ -1,5 +1,7 @@
+import type { PlaybackStep } from "./types.ts";
+
 const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
-const neighbors = {
+const neighbors: Readonly<Record<string, string>> = {
   q: "wa", w: "qeas", e: "wrsd", r: "etdf", t: "ryfg", y: "tugh",
   u: "yihj", i: "uojk", o: "ipkl", p: "ol", a: "qwsz", s: "awedxz",
   d: "serfcx", f: "drtgvc", g: "ftyhbv", h: "gyujnb", j: "huikmn",
@@ -9,8 +11,8 @@ const neighbors = {
 
 /** Each step waits, then replaces the source, including visible corrections.
  * A generator keeps long compositions from allocating every intermediate string. */
-export function* typingSteps(text, random = Math.random) {
-  const between = (min, max) => min + random() * (max - min);
+export function* typingSteps(text: string, random: () => number = Math.random): Generator<PlaybackStep, void> {
+  const between = (min: number, max: number) => min + random() * (max - min);
   let value = "";
   let previous = "";
   let burstRemaining = 0;
@@ -35,7 +37,7 @@ export function* typingSteps(text, random = Math.random) {
 
     const nearby = neighbors[character.toLowerCase()];
     if (nearby && sinceMistake > 12 && random() < 0.025) {
-      let wrong = nearby[Math.floor(random() * nearby.length)];
+      let wrong = nearby.charAt(Math.floor(random() * nearby.length));
       if (character !== character.toLowerCase()) wrong = wrong.toUpperCase();
       yield { value: value + wrong, delay };
       // Notice the mistake, backspace, then resume with the intended character.

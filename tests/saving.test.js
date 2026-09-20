@@ -1,10 +1,11 @@
+import { stripTypeScriptTypes } from "node:module";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
-import { linkSize } from "../public/recording.js";
+import { linkSize } from "../src/recording.ts";
 
-const source = (await readFile(new URL("../public/app.js", import.meta.url), "utf8"))
+const source = (await readFile(new URL("../src/app.ts", import.meta.url), "utf8"))
   .replace(/^import[\s\S]*?;\n/gm, "");
 
 function app() {
@@ -24,11 +25,13 @@ function app() {
     return elements.get(id);
   };
   const location = { href: "https://example.com/", search: "" };
-  vm.runInNewContext(source, {
+  vm.runInNewContext(stripTypeScriptTypes(source.replace(/^export /gm, "")) + "\ninitApp();", {
+    requireElement: selector => element(selector),
     navigator: { clipboard: { writeText: async value => clipboard.push(value) } },
     document: { querySelector: element }, window: { location, addEventListener() {} },
     history: { replaceState(_state, _title, url) { location.href = String(url); writes.push(location.href); } },
     performance: { now: () => time }, URL, URLSearchParams, LINK_LIMIT: 8000, linkSize,
+    appendEdit: (recording, edit) => [recording[0], [...recording[1], edit]],
     braid: value => value, captureEdit: () => [1, 0, 0, "a"],
     encodeRecording: async () => encoded,
     setTimeout: (callback, delay) => { timers.set(++timerId, { callback, at: time + delay }); return timerId; },

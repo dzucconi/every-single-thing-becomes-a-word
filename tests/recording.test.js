@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { captureEdit, applyEdit, recordedSteps, encodeRecording, decodeRecording } from "../public/recording.js";
+import { captureEdit, applyEdit, appendEdit, parseRecording, recordedSteps, encodeRecording, decodeRecording } from "../src/recording.ts";
 
 test("records and replays typing, backspaces, middle edits, paste, and undo exactly", async () => {
   const values = ["", "H", "He", "Helo", "Hel", "Hello", "Hello world", "Hello 🌍", "Hello 👩‍💻", "e\u0301 Hello 👩‍💻", "Hello 👩‍💻", ""];
@@ -53,4 +53,26 @@ test("minimal edits preserve arbitrary Unicode changes", () => {
       assert.equal(applyEdit(before, captureEdit(before, after, 80)), after);
     }
   }
+});
+
+test("appending edits preserves previous recording snapshots", () => {
+  const original = Object.freeze(["a", Object.freeze([])]);
+  const edit = captureEdit("a", "ab", 100);
+  const next = appendEdit(original, edit);
+  assert.deepEqual(original, ["a", []]);
+  assert.deepEqual(next, ["a", [edit]]);
+  assert.notEqual(next, original);
+  assert.notEqual(next[1], original[1]);
+});
+
+test("validates unknown recording data and sequential edit bounds", () => {
+  for (const value of [null, {}, [], [1, []], ["", {}], ["", [null]],
+    ["", [[0, 0, 0]]], ["", [["0", 0, 0, "a"]]],
+    ["", [[0, 0, 0, 1]]], ["", [[0.5, 0, 0, "a"]]],
+    ["", [[2_147_483_648, 0, 0, "a"]]],
+    ["a", [[0, 0, 1, ""], [0, 1, 0, "b"]]]]) {
+    assert.throws(() => parseRecording(value));
+  }
+  assert.deepEqual(parseRecording(["", [[0, 0, 0, "a"], [0, 1, 0, "b"]]]),
+    ["", [[0, 0, 0, "a"], [0, 1, 0, "b"]]]);
 });

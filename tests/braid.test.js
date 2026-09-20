@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { braid } from "../public/braid.js";
+import { braid } from "../src/braid.ts";
 
 test("braids words by column and preserves padding", () => {
   assert.equal(braid("abc de"), "adbec ");

@@ -30,14 +30,28 @@ Add `&playback=1` for simulated typing. Recorded links use your actual edits and
 
 ## Development
 
-With Node.js 22 or newer:
+With Node.js 22.18 or newer:
 
 ```sh
+npm install
 npm run dev
 ```
 
-Open [localhost:5173](http://localhost:5173). No install or build step is needed. Run `npm test` for tests.
+Open [localhost:5173](http://localhost:5173). Vite serves the app during development and rebuilds modules as you edit them.
 
-The app is plain HTML, CSS, and JavaScript. Text processing happens in the browser. Use a current browser with support for `Intl.Segmenter` and Compression Streams.
+```sh
+npm run typecheck  # Strict TypeScript checks
+npm test           # Text, playback, recording, sharing, and control regressions
+npm run build      # Type-check, then build the static site into dist/
+npm run preview    # Serve the production build locally
+```
 
-To deploy, serve `public` as a static site. On Netlify, leave the build command empty; `netlify.toml` sets the publish directory.
+The app uses functional TypeScript with no UI framework or runtime dependencies. Text transformations and immutable recording operations live in `src/braid.ts`, `src/typing.ts`, and `src/recording.ts`. Recording data is validated at the URL boundary. `src/app.ts` and `src/menu.ts` contain browser effects and state scoped to initialization functions; `src/main.ts` initializes them and imports the stylesheet. Strict mode, checked indexed access, and exact optional properties apply to all application source. The Node test harnesses import the TypeScript directly.
+
+Text processing happens entirely in the browser. Use a current browser with support for `Intl.Segmenter` and Compression Streams.
+
+## Deployment
+
+Netlify installs dependencies from `package-lock.json`, runs `npm run build`, and publishes `dist/`. These settings and Node 22 are declared in `netlify.toml`. A type error fails the build before publishing. No server functions or environment secrets are required.
+
+The existing `/every-single-thing-becomes-a-word` redirect to `/` is retained. Compositions and recordings use query parameters on the root page, so no SPA rewrite is needed. To host elsewhere, build and serve `dist/` as a static site.

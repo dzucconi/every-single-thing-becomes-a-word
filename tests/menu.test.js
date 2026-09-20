@@ -1,9 +1,10 @@
+import { stripTypeScriptTypes } from "node:module";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
-const source = await readFile(new URL("../public/menu.js", import.meta.url), "utf8");
+const source = (await readFile(new URL("../src/menu.ts", import.meta.url), "utf8")).replace(/^import[\s\S]*?;\n/gm, "");
 function setup(matches) {
   const handlers = {};
   const shell = { dataset: {}, addEventListener: (key, fn) => { handlers[key] = fn; } };
@@ -17,7 +18,8 @@ function setup(matches) {
   const menu = { getBoundingClientRect: () => ({ left: 1000, right: 1280, top: 670, bottom: 720 }) };
   const linkState = { dataset: {}, hidden: false, getBoundingClientRect: () => ({ left: 12, right: 200, top: 690, bottom: 710 }) };
   const media = { matches, addEventListener: (key, fn) => { handlers[key] = fn; } };
-  vm.runInNewContext(source, {
+  vm.runInNewContext(stripTypeScriptTypes(source.replace(/^export /gm, "")) + "\ninitMenu();", {
+    requireElement: selector => ({ ".control-shell": shell, "#controls": menu, "#menu-toggle": toggle, "#link-state": linkState })[selector],
     document: { querySelector: selector => ({ '.control-shell': shell, '#controls': menu, '#menu-toggle': toggle, '#link-state': linkState })[selector] },
     window: { matchMedia: () => media, addEventListener: (key, fn) => { handlers[key] = fn; } },
     requestAnimationFrame: fn => { fn(); return 1; }, cancelAnimationFrame() {},

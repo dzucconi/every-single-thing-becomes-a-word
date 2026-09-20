@@ -1,15 +1,17 @@
+import type { Edit, Recording, PlaybackStep, LinkSize } from "./types.ts";
+
 // App sharing budget, not a guaranteed limit of every browser or host.
 export const LINK_LIMIT = 8000;
 export const LINK_WARNING = 6400;
 
-export function linkSize(url) {
+export function linkSize(url: string | URL): LinkSize {
   const bytes = new TextEncoder().encode(String(url)).length;
   return { bytes, level: bytes > LINK_LIMIT ? "error" : bytes >= LINK_WARNING ? "warning" : "saved" };
 }
 
 /** Store each edit as [milliseconds, position, removed length, inserted text].
  * UTF-16 positions match textarea selections and preserve arbitrary edits. */
-export function captureEdit(before, after, delay) {
+export function captureEdit(before: string, after: string, delay: number): Edit {
   let start = 0;
   while (start < before.length && start < after.length && before[start] === after[start]) start++;
   let oldEnd = before.length;
@@ -21,11 +23,11 @@ export function captureEdit(before, after, delay) {
   return [Math.round(delay), start, oldEnd - start, after.slice(start, newEnd)];
 }
 
-export function applyEdit(value, [, start, removed, inserted]) {
+export function applyEdit(value: string, [, start, removed, inserted]: Edit): string {
   return value.slice(0, start) + inserted + value.slice(start + removed);
 }
 
-export function* recordedSteps([initial, edits]) {
+export function* recordedSteps([initial, edits]: Recording): Generator<PlaybackStep, void> {
   let value = initial;
   for (const edit of edits) {
     value = applyEdit(value, edit);
@@ -33,7 +35,7 @@ export function* recordedSteps([initial, edits]) {
   }
 }
 
-export async function encodeRecording(recording) {
+export async function encodeRecording(recording: Recording): Promise<string> {
   const source = new Blob([JSON.stringify(recording)]).stream();
   const bytes = new Uint8Array(await new Response(source.pipeThrough(new CompressionStream("deflate"))).arrayBuffer());
   let binary = "";
@@ -41,13 +43,13 @@ export async function encodeRecording(recording) {
   return "1." + btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
 }
 
-export async function decodeRecording(encoded) {
+export async function decodeRecording(encoded: string): Promise<Recording> {
   if (!/^1\.[A-Za-z0-9_-]+$/.test(encoded) || encoded.length > 1_000_000) {
     throw new Error("Invalid recording");
   }
   const bytes = Uint8Array.from(atob(encoded.slice(2).replaceAll("-", "+").replaceAll("_", "/")), char => char.charCodeAt(0));
   const reader = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate")).getReader();
-  const chunks = [];
+  const chunks: Uint8Array<ArrayBuffer>[] = [];
   let size = 0;
   while (true) {
     const { value, done } = await reader.read();
@@ -59,19 +61,35 @@ export async function decodeRecording(encoded) {
     }
     chunks.push(value);
   }
-  const recording = JSON.parse(await new Blob(chunks).text());
-  if (!Array.isArray(recording) || recording.length !== 2 || typeof recording[0] !== "string" || !Array.isArray(recording[1])) {
+  return parseRecording(JSON.parse(await new Blob(chunks).text()));
+}
+
+const isUnknownArray = (value: unknown): value is unknown[] => Array.isArray(value);
+const isNonnegativeInteger = (value: unknown): value is number =>
+  typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+
+/** Validate untrusted URL data before it reaches playback. */
+export function parseRecording(value: unknown): Recording {
+  if (!isUnknownArray(value) || value.length !== 2 ||
+      typeof value[0] !== "string" || !isUnknownArray(value[1])) {
     throw new Error("Invalid recording");
   }
-  let length = recording[0].length;
-  for (const edit of recording[1]) {
-    if (!Array.isArray(edit) || edit.length !== 4 ||
-        !edit.slice(0, 3).every(n => Number.isSafeInteger(n) && n >= 0) ||
-        edit[0] > 2_147_483_647 || typeof edit[3] !== "string" ||
-        edit[1] > length || edit[2] > length - edit[1]) {
+  const initial = value[0];
+  let length = initial.length;
+  const edits = value[1].map((edit): Edit => {
+    if (!isUnknownArray(edit) || edit.length !== 4) throw new Error("Invalid edit");
+    const [delay, start, removed, inserted] = edit;
+    if (!isNonnegativeInteger(delay) || !isNonnegativeInteger(start) ||
+        !isNonnegativeInteger(removed) || typeof inserted !== "string" ||
+        delay > 2_147_483_647 || start > length || removed > length - start) {
       throw new Error("Invalid edit");
     }
-    length += edit[3].length - edit[2];
-  }
-  return recording;
+    length += inserted.length - removed;
+    return [delay, start, removed, inserted];
+  });
+  return [initial, edits];
+}
+
+export function appendEdit(recording: Recording, edit: Edit): Recording {
+  return [recording[0], [...recording[1], edit]];
 }
