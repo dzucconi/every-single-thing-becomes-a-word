@@ -8,14 +8,27 @@
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="/style.css">
     <script type="module" src="/app.js"></script>
+    <script type="module" src="/menu.js"></script>
   </head>
   <body>
     <main aria-label="Every Single Thing Becomes a Word">
       <textarea id="input" aria-label="Source text" placeholder="Begin typing" spellcheck="false" autofocus></textarea>
-      <textarea id="output" aria-label="Braided text" placeholder="Begin typing" spellcheck="false" readonly></textarea>
-      <div class="copy-control">
+      <textarea id="output" aria-label="Braided text" spellcheck="false" readonly></textarea>
+      <div class="control-shell">
+        <button id="menu-toggle" type="button" aria-label="Controls" aria-expanded="false" aria-controls="controls">•••</button>
+        <div id="controls" class="copy-control">
+        <div id="link-state" hidden>
+          <span id="link-size"></span>
+          <span id="link-message" role="status"></span>
+        </div>
         <span id="status" role="status"></span>
-        <button id="copy" type="button" disabled>Copy</button>
+        <div class="button-row">
+          <button id="record" type="button" aria-pressed="false">Record</button>
+          <button id="replay" type="button" disabled>Replay</button>
+          <button id="copy-link" type="button" disabled>Copy link</button>
+          <button id="copy" type="button" disabled>Copy</button>
+        </div>
+        </div>
       </div>
     </main>
     <noscript>This text tool needs JavaScript enabled to braid words.</noscript>

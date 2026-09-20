@@ -8,6 +8,8 @@ const files = new Map([
   ["/app.js", ["app.js", "text/javascript"]],
   ["/braid.js", ["braid.js", "text/javascript"]],
   ["/typing.js", ["typing.js", "text/javascript"]],
+  ["/recording.js", ["recording.js", "text/javascript"]],
+  ["/menu.js", ["menu.js", "text/javascript"]],
 ]);
 const port = Number(process.env.PORT || 5173);
 createServer(async (request, response) => {
