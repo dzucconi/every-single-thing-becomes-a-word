@@ -15,13 +15,14 @@ function setup(matches) {
     focus() { this.focused = true; },
   };
   const menu = { getBoundingClientRect: () => ({ left: 1000, right: 1280, top: 670, bottom: 720 }) };
+  const linkState = { dataset: {}, hidden: false, getBoundingClientRect: () => ({ left: 12, right: 200, top: 690, bottom: 710 }) };
   const media = { matches, addEventListener: (key, fn) => { handlers[key] = fn; } };
   vm.runInNewContext(source, {
-    document: { querySelector: selector => ({ '.control-shell': shell, '#controls': menu, '#menu-toggle': toggle })[selector] },
+    document: { querySelector: selector => ({ '.control-shell': shell, '#controls': menu, '#menu-toggle': toggle, '#link-state': linkState })[selector] },
     window: { matchMedia: () => media, addEventListener: (key, fn) => { handlers[key] = fn; } },
     requestAnimationFrame: fn => { fn(); return 1; }, cancelAnimationFrame() {},
   });
-  return { shell, toggle, attributes, handlers, media };
+  return { shell, toggle, attributes, handlers, media, linkState };
 }
 
 test("mouse proximity reveals controls and moving away or leaving hides them", () => {

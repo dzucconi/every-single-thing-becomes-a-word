@@ -1,33 +1,58 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Every Single Thing Becomes a Word. A text tool by Damon Zucconi that braids words together, one letter at a time.">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Every Single Thing Becomes a Word. A text tool by Damon Zucconi that braids words together, one letter at a time."
+    />
     <title>Every Single Thing Becomes a Word</title>
-    <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/style.css" />
     <script type="module" src="/app.js"></script>
     <script type="module" src="/menu.js"></script>
   </head>
   <body>
     <main aria-label="Every Single Thing Becomes a Word">
-      <textarea id="input" aria-label="Source text" placeholder="Begin typing" spellcheck="false" autofocus></textarea>
-      <textarea id="output" aria-label="Braided text" spellcheck="false" readonly></textarea>
-      <div class="control-shell">
-        <button id="menu-toggle" type="button" aria-label="Controls" aria-expanded="false" aria-controls="controls">•••</button>
-        <div id="controls" class="copy-control">
+      <textarea
+        id="input"
+        aria-label="Source text"
+        placeholder="Begin typing"
+        spellcheck="false"
+        autofocus
+      ></textarea>
+      <div class="encoded-panel">
+        <textarea
+          id="output"
+          aria-label="Braided text"
+          spellcheck="false"
+          readonly
+        ></textarea>
         <div id="link-state" hidden>
           <span id="link-size"></span>
           <span id="link-message" role="status"></span>
         </div>
-        <span id="status" role="status"></span>
-        <div class="button-row">
-          <button id="record" type="button" aria-pressed="false">Record</button>
-          <button id="replay" type="button" disabled>Replay</button>
-          <button id="copy-link" type="button" disabled>Copy link</button>
-          <button id="copy" type="button" disabled>Copy</button>
-        </div>
+      </div>
+      <div class="control-shell">
+        <button
+          id="menu-toggle"
+          type="button"
+          aria-label="Controls"
+          aria-expanded="false"
+          aria-controls="controls"
+        >
+          •••
+        </button>
+        <div id="controls" class="copy-control">
+          <div class="button-row">
+            <button id="record" type="button" aria-pressed="false">
+              Record
+            </button>
+            <button id="replay" type="button" disabled>Replay</button>
+            <button id="copy-link" type="button" disabled>Copy link</button>
+            <button id="copy" type="button" disabled>Copy text</button>
+          </div>
         </div>
       </div>
     </main>

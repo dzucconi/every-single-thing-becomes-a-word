@@ -1,17 +1,36 @@
 import { braid } from "./braid.js";
 import { typingSteps } from "./typing.js";
-import { captureEdit, recordedSteps, encodeRecording, decodeRecording, linkSize, LINK_LIMIT } from "./recording.js";
+import {
+  captureEdit,
+  recordedSteps,
+  encodeRecording,
+  decodeRecording,
+  linkSize,
+  LINK_LIMIT,
+} from "./recording.js";
 
 const input = document.querySelector("#input");
 const output = document.querySelector("#output");
 const copy = document.querySelector("#copy");
-const status = document.querySelector("#status");
 const record = document.querySelector("#record");
 const replay = document.querySelector("#replay");
 const copyLink = document.querySelector("#copy-link");
 const linkState = document.querySelector("#link-state");
 const linkSizeLabel = document.querySelector("#link-size");
 const linkMessage = document.querySelector("#link-message");
+const feedbackTimers = new Map();
+function feedback(button, message, label) {
+  clearTimeout(feedbackTimers.get(button));
+  button.textContent = message;
+  feedbackTimers.set(
+    button,
+    setTimeout(() => {
+      button.textContent = label;
+      feedbackTimers.delete(button);
+    }, 3000),
+  );
+}
+
 let playbackTimer;
 let interaction = 0;
 let recording = null;
@@ -30,28 +49,33 @@ function showLinkSize(url) {
   linkState.hidden = false;
   linkState.dataset.state = size.level;
   linkSizeLabel.textContent = `Link ${size.bytes.toLocaleString("en-US")} / ${LINK_LIMIT.toLocaleString("en-US")} bytes`;
-  linkMessage.textContent = size.level === "error"
-    ? "Link too long. Latest edits aren’t saved in the URL; replay still works."
-    : size.level === "warning" ? "Saved — approaching the link limit." : "Saved";
+  linkMessage.textContent =
+    size.level === "error"
+      ? "Link too long. Latest edits aren’t saved in the URL; replay still works."
+      : "";
   return size.level !== "error";
 }
 
 function update() {
   output.value = braid(input.value);
   copy.disabled = output.value.length === 0;
-  status.textContent = "";
 }
 
 function stopPlayback() {
   clearTimeout(playbackTimer);
+  replay.textContent = "Replay";
   interaction++;
 }
 
 function play(steps) {
   stopPlayback();
+  replay.textContent = "Playing";
   function advance() {
     const next = steps.next();
-    if (next.done) return;
+    if (next.done) {
+      replay.textContent = "Replay";
+      return;
+    }
     playbackTimer = setTimeout(() => {
       input.value = next.value.value;
       const caret = next.value.caret ?? input.value.length;
@@ -95,7 +119,8 @@ async function saveURL() {
       copyLink.disabled = true;
       linkState.hidden = false;
       linkState.dataset.state = "error";
-      linkMessage.textContent = "Couldn’t save the recording to the URL. Replay still works.";
+      linkMessage.textContent =
+        "Couldn’t save the recording to the URL. Replay still works.";
       return false;
     }
   })();
@@ -111,27 +136,25 @@ async function saveURL() {
 function queueSave() {
   saveRevision++;
   linkState.hidden = false;
-  // Keep an existing error visible until a successful save replaces it.
-  if (linkState.dataset.state !== "error") {
-    linkMessage.textContent = "Unsaved edits…";
-  }
   clearTimeout(saveTimer);
   saveTimer = setTimeout(saveURL, 600);
   // Bound how stale the URL can become during uninterrupted typing.
-  if (checkpointTimer === undefined) checkpointTimer = setTimeout(saveURL, 2000);
+  if (checkpointTimer === undefined)
+    checkpointTimer = setTimeout(saveURL, 2000);
 }
 
 function stopRecording() {
   isRecording = false;
-  status.textContent = "";
   record.textContent = "Record";
   record.setAttribute("aria-pressed", "false");
 }
 
 record.addEventListener("click", () => {
   stopPlayback();
+  clearTimeout(feedbackTimers.get(record));
   if (isRecording) {
     stopRecording();
+    feedback(record, "Stopped", "Record");
     void saveURL();
     return;
   }
@@ -142,7 +165,6 @@ record.addEventListener("click", () => {
   record.textContent = "Stop";
   record.setAttribute("aria-pressed", "true");
   replay.disabled = false;
-  status.textContent = "Recording — edits are saved in the link.";
   queueSave();
   input.focus();
 });
@@ -174,12 +196,12 @@ replay.addEventListener("click", () => {
 });
 
 copyLink.addEventListener("click", async () => {
-  if (!recording || !await saveURL()) return;
+  if (!recording || !(await saveURL())) return;
   try {
     await navigator.clipboard.writeText(window.location.href);
-    status.textContent = "Link copied";
+    feedback(copyLink, "Copied", "Copy link");
   } catch {
-    status.textContent = "Copy the link from your address bar.";
+    feedback(copyLink, "Copy from address bar", "Copy link");
   }
 });
 
@@ -187,17 +209,18 @@ copy.addEventListener("click", async () => {
   const value = output.value;
   try {
     await navigator.clipboard.writeText(value);
-    if (output.value === value) status.textContent = "Copied";
+    feedback(copy, "Copied", "Copy");
   } catch {
     output.focus();
     output.select();
-    status.textContent = "Select Copy from your device’s menu.";
+    feedback(copy, "Select Copy from menu", "Copy");
   }
 });
 
 async function loadComposition() {
   const params = new URLSearchParams(window.location.search);
-  const playback = params.has("playback") && !["0", "false"].includes(params.get("playback"));
+  const playback =
+    params.has("playback") && !["0", "false"].includes(params.get("playback"));
   const encoded = params.get("recording");
   if (encoded !== null) {
     const version = interaction;
@@ -209,10 +232,15 @@ async function loadComposition() {
       copyLink.disabled = !showLinkSize(window.location.href);
       input.value = recording[0];
       if (playback) play(recordedSteps(recording));
-      else for (const step of recordedSteps(recording)) input.value = step.value;
+      else
+        for (const step of recordedSteps(recording)) input.value = step.value;
       update();
     } catch {
-      if (version === interaction) status.textContent = "This recording link couldn’t be read.";
+      if (version === interaction) {
+        linkState.hidden = false;
+        linkState.dataset.state = "error";
+        linkMessage.textContent = "This recording link couldn’t be read.";
+      }
     }
     return;
   }
