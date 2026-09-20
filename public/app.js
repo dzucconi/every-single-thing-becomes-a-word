@@ -15,6 +15,7 @@ const copy = document.querySelector("#copy");
 const record = document.querySelector("#record");
 const replay = document.querySelector("#replay");
 const copyLink = document.querySelector("#copy-link");
+const copyComposition = document.querySelector("#copy-composition");
 const linkState = document.querySelector("#link-state");
 const linkSizeLabel = document.querySelector("#link-size");
 const linkMessage = document.querySelector("#link-message");
@@ -59,6 +60,7 @@ function showLinkSize(url) {
 function update() {
   output.value = braid(input.value);
   copy.disabled = output.value.length === 0;
+  copyComposition.disabled = input.value.length === 0;
 }
 
 function stopPlayback() {
@@ -199,9 +201,26 @@ copyLink.addEventListener("click", async () => {
   if (!recording || !(await saveURL())) return;
   try {
     await navigator.clipboard.writeText(window.location.href);
-    feedback(copyLink, "Copied", "Copy link");
+    feedback(copyLink, "Copied", "Copy recording");
   } catch {
-    feedback(copyLink, "Copy from address bar", "Copy link");
+    feedback(copyLink, "Copy from address bar", "Copy recording");
+  }
+});
+
+copyComposition.addEventListener("click", async () => {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("recording");
+  url.searchParams.delete("playback");
+  url.searchParams.set("text", input.value);
+  if (linkSize(url).level === "error") {
+    feedback(copyComposition, "Link too long", "Copy link");
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(url.href);
+    feedback(copyComposition, "Copied", "Copy link");
+  } catch {
+    feedback(copyComposition, "Couldn’t copy", "Copy link");
   }
 });
 
@@ -209,11 +228,11 @@ copy.addEventListener("click", async () => {
   const value = output.value;
   try {
     await navigator.clipboard.writeText(value);
-    feedback(copy, "Copied", "Copy");
+    feedback(copy, "Copied", "Copy text");
   } catch {
     output.focus();
     output.select();
-    feedback(copy, "Select Copy from menu", "Copy");
+    feedback(copy, "Select Copy from menu", "Copy text");
   }
 });
 

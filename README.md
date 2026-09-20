@@ -4,11 +4,11 @@ Words are arranged in a grid, padded with spaces, then read down each column. Th
 
 ## Use
 
-Type or paste text to see it interlaced. **Copy** copies the output. Move the mouse toward the bottom-right corner to reveal the controls, or reach them with Tab. On touch devices, tap **•••**.
+Type or paste text to see it interlaced. **Copy text** copies the output. **Copy link** shares the current text without playback. Move the mouse toward the bottom-right corner to reveal the controls, or reach them with Tab. On touch devices, tap **•••**.
 
-**Record** captures your edits and their timing, beginning with the text already in the field. **Stop** ends the recording, **Replay** plays it back, and **Copy link** copies a link that replays it. Typing during playback stops it. Starting another recording replaces the previous one.
+**Record** captures your edits and their timing, beginning with the text already in the field. **Stop** ends the recording, **Replay** plays it back, and **Copy recording** copies a link that replays it. Typing during playback stops it. Starting another recording replaces the previous one.
 
-Recordings are stored in the URL and include deleted text. Ordinary typing does not update the URL. Links have an 8,000-byte limit; beyond it, Copy link is disabled and the address bar retains the last saved version. The full recording can still be replayed in the current page.
+Recordings are stored in the URL and include deleted text. Ordinary typing does not update the URL. Links have an 8,000-byte limit; beyond it, Copy recording is disabled and the address bar retains the last saved version. The full recording can still be replayed in the current page.
 
 ## Meta
 
@@ -26,7 +26,7 @@ Recordings are stored in the URL and include deleted text. Ordinary typing does 
 
 To open a text directly, use `?text=Every%20single%20thing%20becomes%20a%20word`. URL-encode the text when building a link.
 
-Add `&playback=1` for simulated typing. Recorded links use your actual edits and timing; **Copy link** includes `playback=1` automatically. Set `playback=0` to show the finished text immediately.
+Add `&playback=1` for simulated typing. Recorded links use your actual edits and timing; **Copy recording** includes `playback=1` automatically. Set `playback=0` to show the finished text immediately.
 
 ## Development
 

@@ -5,7 +5,7 @@ import vm from "node:vm";
 import { linkSize } from "../public/recording.js";
 
 const source = (await readFile(new URL("../public/app.js", import.meta.url), "utf8"))
-  .replace(/^import .*;\n/gm, "");
+  .replace(/^import[\s\S]*?;\n/gm, "");
 
 function app() {
   let time = 0;
@@ -14,6 +14,7 @@ function app() {
   const timers = new Map();
   const elements = new Map();
   const writes = [];
+  const clipboard = [];
   const element = id => {
     if (!elements.has(id)) elements.set(id, {
       value: "", textContent: "", dataset: {}, handlers: {},
@@ -24,6 +25,7 @@ function app() {
   };
   const location = { href: "https://example.com/", search: "" };
   vm.runInNewContext(source, {
+    navigator: { clipboard: { writeText: async value => clipboard.push(value) } },
     document: { querySelector: element }, window: { location, addEventListener() {} },
     history: { replaceState(_state, _title, url) { location.href = String(url); writes.push(location.href); } },
     performance: { now: () => time }, URL, URLSearchParams, LINK_LIMIT: 8000, linkSize,
@@ -33,7 +35,7 @@ function app() {
     clearTimeout: id => timers.delete(id),
   });
   return {
-    element, writes, setEncoded: value => { encoded = value; },
+    element, writes, clipboard, setEncoded: value => { encoded = value; },
     click: id => element(id).handlers.click(),
     input(value) { element("#input").value = value; element("#input").handlers.input(); },
     async tick(ms) {
@@ -104,4 +106,36 @@ test("link budget includes exact boundaries and counts bytes", () => {
   assert.equal(linkSize("a".repeat(8000)).level, "warning");
   assert.equal(linkSize("a".repeat(8001)).level, "error");
   assert.equal(linkSize("é").bytes, 2);
+});
+
+
+test("composition links preserve current text without playback or recording history", async () => {
+  const page = app();
+  page.click("#record");
+  await page.tick(600);
+  const value = "hello & goodbye + é 👋\nnew line";
+  page.input(value);
+  await page.click("#copy-composition");
+  const url = new URL(page.clipboard[0]);
+  assert.equal(url.searchParams.get("text"), value);
+  assert.equal(url.searchParams.has("recording"), false);
+  assert.equal(url.searchParams.has("playback"), false);
+  assert.equal(page.writes.length, 1);
+  assert.equal(page.element("#copy-composition").textContent, "Copied");
+  await page.tick(3000);
+  assert.equal(page.element("#copy-composition").textContent, "Copy link");
+});
+
+test("composition links work without recording and reject oversized URLs", async () => {
+  const page = app();
+  assert.equal(page.element("#copy-composition").disabled, true);
+  page.input("a composition");
+  assert.equal(page.element("#copy-composition").disabled, false);
+  await page.click("#copy-composition");
+  assert.equal(new URL(page.clipboard[0]).searchParams.get("text"), "a composition");
+  page.input("a".repeat(8000));
+  await page.click("#copy-composition");
+  assert.equal(page.clipboard.length, 1);
+  assert.equal(page.element("#copy-composition").textContent, "Link too long");
+  assert.equal(page.writes.length, 0);
 });
