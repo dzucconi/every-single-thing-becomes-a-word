@@ -1,4 +1,5 @@
 import { braid } from "./braid.ts";
+import { debounce } from "./debounce.ts";
 import { typingSteps } from "./typing.ts";
 import {
   captureEdit,
@@ -14,6 +15,10 @@ import { requireElement } from "./dom.ts";
 import type { Recording, PlaybackStep } from "./types.ts";
 
 export function initApp(): void {
+  const defaultTitle = document.title;
+  const updateTitle = debounce((value: string) => {
+    document.title = value.trim() || defaultTitle;
+  }, 600);
   const input = requireElement("#input", "textarea");
   const output = requireElement("#output", "textarea");
   const copy = requireElement("#copy", "button");
@@ -66,6 +71,7 @@ export function initApp(): void {
     output.value = braid(input.value);
     copy.disabled = output.value.length === 0;
     copyComposition.disabled = input.value.length === 0;
+    updateTitle(input.value);
   }
 
   function stopPlayback() {

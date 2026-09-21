@@ -7,6 +7,7 @@ import { linkSize } from "../src/recording.ts";
 
 const source = (await readFile(new URL("../src/app.ts", import.meta.url), "utf8"))
   .replace(/^import[\s\S]*?;\n/gm, "");
+const debounceSource = await readFile(new URL("../src/debounce.ts", import.meta.url), "utf8");
 
 function app() {
   let time = 0;
@@ -25,7 +26,7 @@ function app() {
     return elements.get(id);
   };
   const location = { href: "https://example.com/", search: "" };
-  vm.runInNewContext(stripTypeScriptTypes(source.replace(/^export /gm, "")) + "\ninitApp();", {
+  vm.runInNewContext(stripTypeScriptTypes((debounceSource + "\n" + source).replace(/^export /gm, "")) + "\ninitApp();", {
     requireElement: selector => element(selector),
     navigator: { clipboard: { writeText: async value => clipboard.push(value) } },
     document: { querySelector: element }, window: { location, addEventListener() {} },
